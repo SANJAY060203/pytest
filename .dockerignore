@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.zip
+htmlcov/
+report.html
+ui-report.html
+dist/
+build/
+node_modules/
+.git/
+.gitignore
+tests/
+venv/
+.venv/

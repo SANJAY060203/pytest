@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  tests:
+    build: .
+    depends_on:
+      - selenium
+    environment:
+      SELENIUM_URL: http://selenium:4444/wd/hub
+    volumes:
+      - .:/app
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2gb"
+    ports:
+      - "4444:4444"

@@ -1,0 +1,13 @@
+pytest
+pytest-benchmark
+pytest-asyncio
+pytest-aiohttp
+selenium
+webdriver-manager
+pytest-html
+pytest-cov
+pytest-xdist
+pytest-mock
+pytest-rerunfailures
+tox
+tox-gh-actions
