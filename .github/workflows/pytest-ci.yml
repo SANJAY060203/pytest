@@ -59,39 +59,33 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
 
-      # Build FastAPI Docker image
       - name: Build FastAPI image
         run: docker build -f fastapi.Dockerfile -t fastapi-test .
 
-      # Run FastAPI container in background
       - name: Run FastAPI container
         run: |
           docker run -d --network=host --name fastapi fastapi-test
-          sleep 5  # wait for server to start
+          sleep 5
 
-      # Run Selenium UI tests
       - name: Run UI tests
         env:
           SELENIUM_URL: http://localhost:4444/wd/hub
           FASTAPI_URL: http://127.0.0.1:5005
         run: pytest -m ui -v
 
-      # Generate HTML Test Report
       - name: Upload UI Test Report
         run: pytest --html=ui-report.html --self-contained-html -m ui
 
-      # Upload report to GitHub
       - uses: actions/upload-artifact@v4
         with:
           name: ui-tests-report
           path: ui-report.html
 
-      # Cleanup container
       - name: Stop FastAPI container
         if: always()
         run: docker rm -f fastapi
