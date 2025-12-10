@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+report.html
+ui-report.html
+htmlcov/
+*.log
