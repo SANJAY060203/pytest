@@ -53,24 +53,16 @@ jobs:
           - 4444:4444
 
       fastapi:
-        image: python:3.10-slim
+        build:
+          context: .
+          dockerfile: fastapi.Dockerfile
+        ports:
+          - 5005:5005
         options: >-
           --health-cmd "curl --fail http://localhost:5005/ || exit 1"
           --health-interval 5s
           --health-timeout 2s
           --health-retries 20
-        volumes:
-          - .:/app
-        working_directory: /app
-        command: >
-          bash -c "
-            pip install --upgrade pip &&
-            pip install -r requirements.txt &&
-            pip install -r requirements-dev.txt &&
-            uvicorn src.ui.fastapi_ui:app --host 0.0.0.0 --port 5005
-          "
-        ports:
-          - 5005:5005
 
     steps:
       - uses: actions/checkout@v4
