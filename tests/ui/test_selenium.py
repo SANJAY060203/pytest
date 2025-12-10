@@ -38,11 +38,10 @@ def create_driver():
     if selenium_url:
         return webdriver.Remote(
             command_executor=selenium_url,
-            desired_capabilities=DesiredCapabilities.CHROME,
-            options=options,
+            options=options
         )
 
-    # Otherwise → local Chrome
+    # Otherwise use local Chrome
     from webdriver_manager.chrome import ChromeDriverManager
     from selenium.webdriver.chrome.service import Service as ChromeService
 
