@@ -14,24 +14,16 @@ from src.ui.fastapi_ui import app as fastapi_app
 
 @pytest.fixture(scope="module")
 def live_server():
-    """
-    In CI: FastAPI runs in Docker → DO NOT start local server.
-    Locally: start uvicorn on 127.0.0.1:5005.
-    """
     fastapi_url = os.getenv("FASTAPI_URL")
-
-    # CI mode
     if fastapi_url:
-        return fastapi_url  # use running container
+        return fastapi_url  # e.g., http://fastapi:5005
 
-    # Local mode: start uvicorn manually
-    config = uvicorn.Config(fastapi_app, host="127.0.0.1", port=5005, log_level="info")
+    # Local development mode
+    config = uvicorn.Config(fastapi_app, host="127.0.0.1", port=5005)
     server = uvicorn.Server(config)
-
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
     time.sleep(1)
-
     return "http://127.0.0.1:5005"
 
 
