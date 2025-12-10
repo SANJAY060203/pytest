@@ -44,25 +44,12 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-
       selenium:
         image: selenium/standalone-chrome:latest
         options: >-
           --shm-size=2g
         ports:
           - 4444:4444
-
-      fastapi:
-        build:
-          context: .
-          dockerfile: fastapi.Dockerfile
-        ports:
-          - 5005:5005
-        options: >-
-          --health-cmd "curl --fail http://localhost:5005/ || exit 1"
-          --health-interval 5s
-          --health-timeout 2s
-          --health-retries 20
 
     steps:
       - uses: actions/checkout@v4
@@ -72,21 +59,39 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
 
+      # Build FastAPI Docker image
+      - name: Build FastAPI image
+        run: docker build -f fastapi.Dockerfile -t fastapi-test .
+
+      # Run FastAPI container in background
+      - name: Run FastAPI container
+        run: |
+          docker run -d --network=host --name fastapi fastapi-test
+          sleep 5  # wait for server to start
+
+      # Run Selenium UI tests
       - name: Run UI tests
         env:
-          SELENIUM_URL: http://selenium:4444/wd/hub
-          FASTAPI_URL: http://fastapi:5005
+          SELENIUM_URL: http://localhost:4444/wd/hub
+          FASTAPI_URL: http://127.0.0.1:5005
         run: pytest -m ui -v
 
+      # Generate HTML Test Report
       - name: Upload UI Test Report
         run: pytest --html=ui-report.html --self-contained-html -m ui
 
+      # Upload report to GitHub
       - uses: actions/upload-artifact@v4
         with:
           name: ui-tests-report
           path: ui-report.html
+
+      # Cleanup container
+      - name: Stop FastAPI container
+        if: always()
+        run: docker rm -f fastapi
