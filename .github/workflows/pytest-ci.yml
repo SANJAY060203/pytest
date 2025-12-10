@@ -7,7 +7,7 @@ on:
 
 jobs:
   fast-tests:
-    name: Unit + API + Async Tests
+    name: All Tests
     runs-on: ubuntu-latest
 
     steps:
