@@ -6,6 +6,7 @@ on:
   pull_request:
 
 jobs:
+
   fast-tests:
     name: All Tests
     runs-on: ubuntu-latest
@@ -36,18 +37,40 @@ jobs:
       - name: Run non-UI tests
         run: pytest -k "not ui" -v
 
+
   ui-tests:
     name: Selenium UI Tests
     needs: fast-tests
     runs-on: ubuntu-latest
 
     services:
+
       selenium:
         image: selenium/standalone-chrome:latest
         options: >-
           --shm-size=2g
         ports:
           - 4444:4444
+
+      fastapi:
+        image: python:3.10-slim
+        options: >-
+          --health-cmd "curl --fail http://localhost:5005/ || exit 1"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 20
+        volumes:
+          - .:/app
+        working_directory: /app
+        command: >
+          bash -c "
+            pip install --upgrade pip &&
+            pip install -r requirements.txt &&
+            pip install -r requirements-dev.txt &&
+            uvicorn src.ui.fastapi_ui:app --host 0.0.0.0 --port 5005
+          "
+        ports:
+          - 5005:5005
 
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +87,8 @@ jobs:
 
       - name: Run UI tests
         env:
-          SELENIUM_URL: http://localhost:4444/wd/hub
+          SELENIUM_URL: http://selenium:4444/wd/hub
+          FASTAPI_URL: http://fastapi:5005
         run: pytest -m ui -v
 
       - name: Upload UI Test Report
